@@ -2,4 +2,8 @@
 #include "defs.h"
 #include "tree.h"
 
-void generatecode(struct ASTnode *n);
+int genAST(struct ASTnode *n);
+void genpreamble();
+void genpostamble();
+void genfreeregs();
+void genprintint(int reg);

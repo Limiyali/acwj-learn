@@ -3,7 +3,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 
-static int genAST(struct ASTnode *n)
+int genAST(struct ASTnode *n)
 {
 	int leftreg, rightreg;
 
@@ -30,12 +30,19 @@ static int genAST(struct ASTnode *n)
 	}
 }
 
-void generatecode(struct ASTnode *n)
+void genpreamble()
 {
-	int reg;
-
 	cgpreamble();
-	reg = genAST(n);
-	cgprintint(reg);
+}
+void genpostamble()
+{
 	cgpostamble();
+}
+void genfreeregs()
+{
+	freeall_registers();
+}
+void genprintint(int reg)
+{
+	cgprintint(reg);
 }

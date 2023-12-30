@@ -3,6 +3,7 @@
 #include "expr.h"
 #include "interp.h"
 #include "gen.h"
+#include "stmt.h"
 #include <stdio.h>
 #include <errno.h>
 #include <string.h>
@@ -43,8 +44,9 @@ int main(int argc, char *argv[])
 	}
 
 	scan(&Token);
-	struct ASTnode *n = binexpr(0); // Parse the expression in the file
-	printf("%d\n", interpretAST(n)); // Calculate the final result
-	generatecode(n);
+	genpreamble();
+	statements();
+	genpostamble();
+	fclose(Outfile);
 	return 0;
 }
