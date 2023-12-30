@@ -2,5 +2,4 @@
 #include "defs.h"
 #include "tree.h"
 
-int arithop(int t);
-struct ASTnode *binexpr(void);
+int interpretAST(struct ASTnode *n);

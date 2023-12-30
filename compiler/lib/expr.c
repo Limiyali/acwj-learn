@@ -1,5 +1,6 @@
 #include "expr.h"
 #include "data.h"
+#include "scan.h"
 #include <stdio.h>
 
 int arithop(int t)
@@ -17,4 +18,35 @@ int arithop(int t)
 		fprintf(stderr, "unknown token in arithop() on line %d\n", Line);
 		exit(1);
 	}
+}
+
+static struct ASTnode *primary(void)
+{
+	struct ASTnode *n;
+
+	switch (Token.token) {
+	case T_INTLIT:
+		n = mkastleaf(A_INTLIT, Token.intvalue);
+		scan(&Token);
+		return n;
+
+	default:
+		fprintf(stderr, "syntax error on line %d\n", Line);
+		exit(1);
+	}
+}
+
+struct ASTnode *binexpr(void)
+{
+	struct ASTnode *n, *left, *right;
+	int nodetype;
+
+	left = primary();
+	if (Token.token == T_EOF)
+		return left;
+	nodetype = arithop(Token.token);
+	scan(&Token);
+	right = binexpr();
+	n = mkastnode(nodetype, left, right, 0);
+	return n;
 }

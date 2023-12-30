@@ -6,6 +6,6 @@ project(SimpleTest
         VERSION 1.0)
 
 
-add_definitions("-Wall")
+add_definitions("-Wall -g")
 add_subdirectory (lib)
 add_subdirectory (test)
