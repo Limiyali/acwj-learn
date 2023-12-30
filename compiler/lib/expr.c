@@ -37,86 +37,39 @@ static struct ASTnode *primary(void)
 	}
 }
 
-struct ASTnode *binexpr(void)
+static int OpPrec[] = { 0, 10, 10, 20, 20, 0 };
+//                     EOF  +   -   *   /  INTLIT
+
+int op_precedence(int tokentype)
 {
-	struct ASTnode *n, *left, *right;
-	int nodetype;
+	int prec = OpPrec[tokentype];
+	if (prec == 0) {
+		fprintf(stderr, "syntax error on line %d, token %d\n", Line, tokentype);
+		exit(1);
+	}
+	return prec;
+}
+
+struct ASTnode *binexpr(int ptp)
+{
+	struct ASTnode *left, *right;
+	int tokentype;
 
 	left = primary();
+
+	tokentype = Token.token;
 	if (Token.token == T_EOF)
 		return left;
-	nodetype = arithop(Token.token);
-	scan(&Token);
-	right = binexpr();
-	n = mkastnode(nodetype, left, right, 0);
-	return n;
-}
 
-struct ASTnode *additive_expr(void)
-{
-	struct ASTnode *left, *right;
-	int tokentype;
-
-	// Get the left sub-tree at a higher precedence than us
-	left = multiplicative_expr();
-
-	// If no tokens left, return just the left node
-	tokentype = Token.token;
-	if (tokentype == T_EOF)
-		return (left);
-
-	// Loop working on token at our level of precedence
-	while (1) {
-		// Fetch in the next integer literal
+	while (op_precedence(tokentype) > ptp) {
 		scan(&Token);
 
-		// Get the right sub-tree at a higher precedence than us
-		right = multiplicative_expr();
-
-		// Join the two sub-trees with our low-precedence operator
+		right = binexpr(OpPrec[tokentype]);
 		left = mkastnode(arithop(tokentype), left, right, 0);
 
-		// And get the next token at our precedence
 		tokentype = Token.token;
 		if (tokentype == T_EOF)
-			break;
+			return left;
 	}
-
-	// Return whatever tree we have created
-	return (left);
-}
-
-struct ASTnode *multiplicative_expr(void)
-{
-	struct ASTnode *left, *right;
-	int tokentype;
-
-	// Get the integer literal on the left.
-	// Fetch the next token at the same time.
-	left = primary();
-
-	// If no tokens left, return just the left node
-	tokentype = Token.token;
-	if (tokentype == T_EOF)
-		return (left);
-	arithop(tokentype);
-
-	// While the token is a '*' or '/'
-	while ((tokentype == T_STAR) || (tokentype == T_SLASH)) {
-		// Fetch in the next integer literal
-		scan(&Token);
-		right = primary();
-
-		// Join that with the left integer literal
-		left = mkastnode(arithop(tokentype), left, right, 0);
-
-		// Update the details of the current token.
-		// If no tokens left, return just the left node
-		tokentype = Token.token;
-		if (tokentype == T_EOF)
-			break;
-	}
-
-	// Return whatever tree we have created
-	return (left);
+	return left;
 }
