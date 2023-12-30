@@ -1,16 +1,17 @@
 #include "gen.h"
 #include "cg.h"
+#include "data.h"
 #include <stdio.h>
 #include <stdlib.h>
 
-int genAST(struct ASTnode *n)
+int genAST(struct ASTnode *n, int reg)
 {
 	int leftreg, rightreg;
 
 	if (n->left)
-		leftreg = genAST(n->left);
+		leftreg = genAST(n->left, -1);
 	if (n->right)
-		rightreg = genAST(n->right);
+		rightreg = genAST(n->right, leftreg);
 
 	switch (n->op) {
 	case A_ADD:
@@ -22,7 +23,13 @@ int genAST(struct ASTnode *n)
 	case A_DIVIDE:
 		return (cgdiv(leftreg, rightreg));
 	case A_INTLIT:
-		return (cgload(n->intvalue));
+		return (cgloadint(n->v.intvalue));
+	case A_IDENT:
+		return cgloadglob(Gsym[n->v.id].name);
+	case A_LVIDENT:
+		return cgstorglob(reg, Gsym[n->v.id].name);
+	case A_ASSIGN:
+		return rightreg;
 
 	default:
 		fprintf(stderr, "Unknown AST operator %d\n", n->op);
@@ -45,4 +52,9 @@ void genfreeregs()
 void genprintint(int reg)
 {
 	cgprintint(reg);
+}
+
+void genglobsym(char *s)
+{
+	cgglobsym(s);
 }

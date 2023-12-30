@@ -14,7 +14,10 @@ struct ASTnode *mkastnode(int op, struct ASTnode *left, struct ASTnode *right,
 	new->op = op;
 	new->left = left;
 	new->right = right;
-	new->intvalue = intvalue;
+	if (A_LVIDENT == op)
+		new->v.id = intvalue;
+	else
+		new->v.intvalue = intvalue;
 	return new;
 }
 

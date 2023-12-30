@@ -1,6 +1,8 @@
 #include "expr.h"
 #include "data.h"
 #include "scan.h"
+#include "sym.h"
+#include "misc.h"
 #include <stdio.h>
 
 int arithop(int t)
@@ -23,18 +25,23 @@ int arithop(int t)
 static struct ASTnode *primary(void)
 {
 	struct ASTnode *n;
+	int id;
 
 	switch (Token.token) {
 	case T_INTLIT:
 		n = mkastleaf(A_INTLIT, Token.intvalue);
-		scan(&Token);
-		return n;
-
+		break;
+	case T_IDENT:
+		id = findglob(Text);
+		if (id == -1)
+			fatals("Unknown variable", Text);
+		n = mkastleaf(A_IDENT, id);
+		break;
 	default:
-		fprintf(stderr, "syntax error on line %d, token %d\n", Line,
-				Token.token);
-		exit(1);
+		fatald("Syntax error, token", Token.token);
 	}
+	scan(&Token);
+	return n;
 }
 
 static int OpPrec[] = { 0, 10, 10, 20, 20, 0 };
