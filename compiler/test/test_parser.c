@@ -30,7 +30,7 @@ int main(int argc, char *argv[])
 	init();
 	Infile = fopen(argv[1], "r");
 	scan(&Token);
-	struct ASTnode *n = binexpr(); // Parse the expression in the file
+	struct ASTnode *n = additive_expr(); // Parse the expression in the file
 	printf("%d\n", interpretAST(n)); // Calculate the final result
 	return 0;
 }
