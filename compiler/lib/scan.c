@@ -1,6 +1,7 @@
 #include "data.h"
 #include "scan.h"
 #include "defs.h"
+#include "misc.h"
 #include <string.h>
 #include <stdio.h>
 #include <ctype.h>
@@ -110,9 +111,37 @@ int scan(struct token *t)
 		t->token = T_SEMI;
 		break;
 	case '=':
-		t->token = T_EQUALS;
+		if ((c = next()) == '=')
+			t->token = T_EQ;
+		else {
+			t->token = T_ASSIGN;
+			putback(c);
+		}
 		break;
-
+	case '!':
+		if ((c = next()) == '=') {
+			t->token = T_NE;
+		} else {
+			fatalc("Unrecognised character", c);
+		}
+		break;
+	case '<':
+		if ((c = next()) == '=') {
+			t->token = T_LE;
+		} else {
+			putback(c);
+			t->token = T_LT;
+		}
+		break;
+	case '>':
+		if ((c = next()) == '=') {
+			t->token = T_GE;
+		} else {
+			putback(c);
+			t->token = T_GT;
+		}
+		break;
+		
 	default:
 		if (isdigit(c)) {
 			t->token = T_INTLIT;

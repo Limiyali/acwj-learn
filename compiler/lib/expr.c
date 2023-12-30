@@ -7,19 +7,10 @@
 
 int arithop(int t)
 {
-	switch (t) {
-	case T_PLUS:
-		return A_ADD;
-	case T_MINUS:
-		return A_SUBTRACT;
-	case T_STAR:
-		return A_MULTIPLY;
-	case T_SLASH:
-		return A_DIVIDE;
-	default:
-		fprintf(stderr, "syntax error on line %d, token %d\n", Line, t);
-		exit(1);
-	}
+	if (t > T_EOF && t < T_INTLIT)
+		return t;
+	fatald("Syntax error, token", t);
+	return -1;
 }
 
 static struct ASTnode *primary(void)
@@ -44,8 +35,12 @@ static struct ASTnode *primary(void)
 	return n;
 }
 
-static int OpPrec[] = { 0, 10, 10, 20, 20, 0 };
-//                     EOF  +   -   *   /  INTLIT
+static int OpPrec[] = {
+	0,	10, 10, // T_EOF, T_PLUS, T_MINUS
+	20, 20, // T_STAR, T_SLASH
+	30, 30, // T_EQ, T_NE
+	40, 40, 40, 40 // T_LT, T_GT, T_LE, T_GE
+};
 
 int op_precedence(int tokentype)
 {
