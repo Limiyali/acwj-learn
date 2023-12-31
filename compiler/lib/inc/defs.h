@@ -25,9 +25,15 @@ enum {
 	T_SEMI,
 	T_ASSIGN,
 	T_IDENT,
+	T_LBRACE,
+	T_RBRACE,
+	T_LPAREN,
+	T_RPAREN,
 	// Keywords
 	T_PRINT,
-	T_INT
+	T_INT,
+	T_IF,
+	T_ELSE
 };
 
 enum {
@@ -44,12 +50,16 @@ enum {
 	A_INTLIT,
 	A_IDENT,
 	A_LVIDENT,
-	A_ASSIGN
+	A_ASSIGN,
+	A_GLUE,
+	A_IF,
+	A_PRINT
 };
 
 struct ASTnode {
 	int op;
 	struct ASTnode *left;
+	struct ASTnode *mid;
 	struct ASTnode *right;
 	union defs {
 		int intvalue;

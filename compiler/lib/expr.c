@@ -60,17 +60,17 @@ struct ASTnode *binexpr(int ptp)
 	left = primary();
 
 	tokentype = Token.token;
-	if (Token.token == T_SEMI)
+	if (Token.token == T_SEMI || tokentype == T_RPAREN)
 		return left;
 
 	while (op_precedence(tokentype) > ptp) {
 		scan(&Token);
 
 		right = binexpr(OpPrec[tokentype]);
-		left = mkastnode(arithop(tokentype), left, right, 0);
+		left = mkastnode(arithop(tokentype), left, NULL, right, 0);
 
 		tokentype = Token.token;
-		if (tokentype == T_SEMI)
+		if (tokentype == T_SEMI || tokentype == T_RPAREN)
 			return left;
 	}
 	return left;

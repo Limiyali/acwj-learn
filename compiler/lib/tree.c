@@ -2,8 +2,8 @@
 #include <stdlib.h>
 #include <stdio.h>
 
-struct ASTnode *mkastnode(int op, struct ASTnode *left, struct ASTnode *right,
-						  int intvalue)
+struct ASTnode *mkastnode(int op, struct ASTnode *left, struct ASTnode *mid,
+						  struct ASTnode *right, int intvalue)
 {
 	struct ASTnode *new;
 	new = malloc(sizeof(struct ASTnode));
@@ -13,6 +13,7 @@ struct ASTnode *mkastnode(int op, struct ASTnode *left, struct ASTnode *right,
 	}
 	new->op = op;
 	new->left = left;
+	new->mid = mid;
 	new->right = right;
 	if (A_LVIDENT == op)
 		new->v.id = intvalue;
@@ -23,10 +24,10 @@ struct ASTnode *mkastnode(int op, struct ASTnode *left, struct ASTnode *right,
 
 struct ASTnode *mkastleaf(int op, int intvalue)
 {
-	return mkastnode(op, NULL, NULL, intvalue);
+	return mkastnode(op, NULL, NULL, NULL, intvalue);
 }
 
 struct ASTnode *mkastunary(int op, struct ASTnode *left, int intvalue)
 {
-	return mkastnode(op, left, NULL, intvalue);
+	return mkastnode(op, left, NULL, NULL, intvalue);
 }

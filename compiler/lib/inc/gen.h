@@ -2,7 +2,9 @@
 #include "defs.h"
 #include "tree.h"
 
-int genAST(struct ASTnode *n, int reg);
+#define NOREG -1
+
+int genAST(struct ASTnode *n, int reg, int parentASTop);
 void genpreamble();
 void genpostamble();
 void genfreeregs();

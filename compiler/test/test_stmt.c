@@ -45,7 +45,8 @@ int main(int argc, char *argv[])
 
 	scan(&Token);
 	genpreamble();
-	statements();
+	struct ASTnode *tree = compound_statement();
+	genAST(tree, NOREG, 0);
 	genpostamble();
 	fclose(Outfile);
 	return 0;
