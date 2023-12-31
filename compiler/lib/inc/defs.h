@@ -34,7 +34,8 @@ enum {
 	T_INT,
 	T_IF,
 	T_ELSE,
-	T_WHILE
+	T_WHILE,
+	T_FOR
 };
 
 enum {
@@ -55,7 +56,8 @@ enum {
 	A_GLUE,
 	A_IF,
 	A_PRINT,
-	A_WHILE
+	A_WHILE,
+	A_FORE
 };
 
 struct ASTnode {
