@@ -19,11 +19,6 @@ void semi(void)
 	match(T_SEMI, ";");
 }
 
-void ident(void)
-{
-	match(T_IDENT, "identifier");
-}
-
 void lbrace()
 {
 	match(T_LBRACE, "{");
@@ -41,6 +36,11 @@ void lparen()
 void rparen()
 {
 	match(T_RPAREN, ")");
+}
+
+void ident(void)
+{
+	match(T_IDENT, "identifier");
 }
 
 void fatal(char *s)

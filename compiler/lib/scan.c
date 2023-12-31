@@ -6,6 +6,13 @@
 #include <stdio.h>
 #include <ctype.h>
 
+static int chrpos(char *s, int c)
+{
+	char *p;
+	p = strchr(s, c);
+	return (p ? p - s : -1);
+}
+
 static int next(void)
 {
 	int c;
@@ -25,6 +32,28 @@ static int next(void)
 static void putback(int c)
 {
 	Putback = c;
+}
+
+static int skip(void)
+{
+	int c;
+	c = next();
+	while (' ' == c || '\t' == c || '\n' == c || '\r' == c || '\f' == c)
+		c = next();
+	return c;
+}
+
+static int scanint(int c)
+{
+	int k, val = 0;
+
+	while ((k = chrpos("0123456789", c)) >= 0) {
+		val = val * 10 + k;
+		c = next();
+	}
+
+	putback(c);
+	return val;
 }
 
 static int scanident(int c, char *buf, int lim)
@@ -72,49 +101,27 @@ static int keyword(char *s)
 		if (!strcmp(s, "void"))
 			return (T_VOID);
 		break;
+	case 'c':
+		if (!strcmp(s, "char"))
+			return (T_CHAR);
+		break;
 	}
 	return (0);
-}
-
-static int skip(void)
-{
-	int c;
-	c = next();
-	while (' ' == c || '\t' == c || '\n' == c || '\r' == c || '\f' == c)
-		c = next();
-	return c;
-}
-
-static int chrpos(char *s, int c)
-{
-	char *p;
-	p = strchr(s, c);
-	return (p ? p - s : -1);
-}
-
-static int scanint(int c)
-{
-	int k, val = 0;
-
-	while ((k = chrpos("0123456789", c)) >= 0) {
-		val = val * 10 + k;
-		c = next();
-	}
-
-	putback(c);
-	return val;
 }
 
 int scan(struct token *t)
 {
 	int c, tokentype;
+
+	// Skip whitespace
 	c = skip();
 
+	// Determine the token based on
+	// the input character
 	switch (c) {
 	case EOF:
 		t->token = T_EOF;
-		return 0;
-		break;
+		return (0);
 	case '+':
 		t->token = T_PLUS;
 		break;
@@ -143,11 +150,11 @@ int scan(struct token *t)
 		t->token = T_RPAREN;
 		break;
 	case '=':
-		if ((c = next()) == '=')
+		if ((c = next()) == '=') {
 			t->token = T_EQ;
-		else {
-			t->token = T_ASSIGN;
+		} else {
 			putback(c);
+			t->token = T_ASSIGN;
 		}
 		break;
 	case '!':
@@ -173,24 +180,29 @@ int scan(struct token *t)
 			t->token = T_GT;
 		}
 		break;
-
 	default:
+
+		// If it's a digit, scan the
+		// literal integer value in
 		if (isdigit(c)) {
-			t->token = T_INTLIT;
 			t->intvalue = scanint(c);
+			t->token = T_INTLIT;
 			break;
 		} else if (isalpha(c) || '_' == c) {
+			// Read in a keyword or identifier
 			scanident(c, Text, TEXTLEN);
+
+			// If it's a recognised keyword, return that token
 			if ((tokentype = keyword(Text))) {
 				t->token = tokentype;
 				break;
 			}
+			// Not a recognised keyword, so it must be an identifier
 			t->token = T_IDENT;
 			break;
 		}
-		printf("Unrecognised character %c on line %d\n", c, Line);
-		exit(1);
+		// The character isn't part of any recognised token, error
+		fatalc("Unrecognised character", c);
 	}
-
 	return 1;
 }

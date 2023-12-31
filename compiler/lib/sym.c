@@ -26,12 +26,14 @@ static int newglob(void)
 	return (p);
 }
 
-int addglob(char *name)
+int addglob(char *name, int type, int stype)
 {
 	int y;
 	if ((y = findglob(name)) != -1)
 		return y;
 	y = newglob();
 	Gsym[y].name = strdup(name);
+	Gsym[y].type = type;
+	Gsym[y].stype = stype;
 	return y;
 }

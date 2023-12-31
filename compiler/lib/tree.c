@@ -2,32 +2,31 @@
 #include <stdlib.h>
 #include <stdio.h>
 
-struct ASTnode *mkastnode(int op, struct ASTnode *left, struct ASTnode *mid,
-						  struct ASTnode *right, int intvalue)
+struct ASTnode *mkastnode(int op, int type, struct ASTnode *left,
+						  struct ASTnode *mid, struct ASTnode *right,
+						  int intvalue)
 {
-	struct ASTnode *new;
-	new = malloc(sizeof(struct ASTnode));
-	if (!new) {
+	struct ASTnode *n;
+	n = malloc(sizeof(struct ASTnode));
+	if (!n) {
 		fprintf(stderr, "Unable to malloc in mkastnode()\n");
 		exit(1);
 	}
-	new->op = op;
-	new->left = left;
-	new->mid = mid;
-	new->right = right;
-	if (A_LVIDENT == op)
-		new->v.id = intvalue;
-	else
-		new->v.intvalue = intvalue;
-	return new;
+	n->op = op;
+	n->left = left;
+	n->mid = mid;
+	n->right = right;
+	n->type = type;
+	n->v.intvalue = intvalue;
+	return n;
 }
 
-struct ASTnode *mkastleaf(int op, int intvalue)
+struct ASTnode *mkastleaf(int op, int type, int intvalue)
 {
-	return mkastnode(op, NULL, NULL, NULL, intvalue);
+	return mkastnode(op, type, NULL, NULL, NULL, intvalue);
 }
 
-struct ASTnode *mkastunary(int op, struct ASTnode *left, int intvalue)
+struct ASTnode *mkastunary(int op, int type, struct ASTnode *left, int intvalue)
 {
-	return mkastnode(op, left, NULL, NULL, intvalue);
+	return mkastnode(op, type, left, NULL, NULL, intvalue);
 }

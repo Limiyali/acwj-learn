@@ -7,6 +7,8 @@ struct token {
 
 struct symtable {
 	char *name; // Name of a symbol
+	int type;
+	int stype;
 };
 
 enum {
@@ -36,7 +38,8 @@ enum {
 	T_ELSE,
 	T_WHILE,
 	T_FOR,
-	T_VOID
+	T_VOID,
+	T_CHAR
 };
 
 enum {
@@ -59,11 +62,13 @@ enum {
 	A_PRINT,
 	A_WHILE,
 	A_FORE,
-	A_FUNCTION
+	A_FUNCTION,
+	A_WIDEN
 };
 
 struct ASTnode {
 	int op;
+	int type;
 	struct ASTnode *left;
 	struct ASTnode *mid;
 	struct ASTnode *right;
@@ -72,3 +77,7 @@ struct ASTnode {
 		int id;
 	} v;
 };
+
+enum { P_NONE, P_VOID, P_CHAR, P_INT };
+
+enum { S_VARIABLE, S_FUNCTION };

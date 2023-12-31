@@ -7,24 +7,52 @@
 #include "data.h"
 #include "sym.h"
 #include "scan.h"
+#include "decl.h"
+#include "types.h"
 
 static struct ASTnode *print_statement(void)
 {
 	struct ASTnode *tree;
+	int lefttype, righttype;
 
 	match(T_PRINT, "print");
 	tree = binexpr(0);
-	tree = mkastunary(A_PRINT, tree, 0);
+
+	lefttype = P_INT;
+	righttype = tree->type;
+	if (!type_compatible(&lefttype, &righttype, 0))
+		fatal("Incompatible types");
+	if (righttype)
+		tree = mkastunary(righttype, P_INT, tree, 0);
+
+	tree = mkastunary(A_PRINT, P_NONE, tree, 0);
 	return tree;
 }
 
-static void var_declaration(void)
+static struct ASTnode *assignment_statement(void)
 {
-	match(T_INT, "int");
+	struct ASTnode *left, *right, *tree;
+	int lefttype, righttype;
+	int id;
+
 	ident();
-	addglob(Text);
-	genglobsym(Text);
-	semi();
+
+	if ((id = findglob(Text)) == -1)
+		fatals("Undeclared variable", Text);
+	right = mkastleaf(A_LVIDENT, Gsym[id].type, id);
+	match(T_ASSIGN, "=");
+	left = binexpr(0);
+
+	lefttype = left->type;
+	righttype = right->type;
+	if (!type_compatible(&lefttype, &righttype, 1)) // Note the 1
+		fatal("Incompatible types");
+	if (lefttype)
+		left = mkastunary(lefttype, right->type, left, 0);
+
+	tree = mkastnode(A_ASSIGN, P_INT, left, NULL, right, 0);
+
+	return tree;
 }
 
 static struct ASTnode *if_statement(void)
@@ -43,7 +71,7 @@ static struct ASTnode *if_statement(void)
 		scan(&Token);
 		falseAST = compound_statement();
 	}
-	return (mkastnode(A_IF, condAST, trueAST, falseAST, 0));
+	return (mkastnode(A_IF, P_NONE, condAST, trueAST, falseAST, 0));
 }
 
 static struct ASTnode *while_statement(void)
@@ -58,49 +86,10 @@ static struct ASTnode *while_statement(void)
 	rparen();
 
 	bodyAST = compound_statement();
-	return (mkastnode(A_WHILE, condAST, NULL, bodyAST, 0));
+	return (mkastnode(A_WHILE, P_NONE, condAST, NULL, bodyAST, 0));
 }
 
-static struct ASTnode *assignment_statement(void)
-{
-	struct ASTnode *left, *right, *tree;
-	int id;
-
-	ident();
-
-	if ((id = findglob(Text)) == -1)
-		fatals("Undeclared variable", Text);
-	right = mkastleaf(A_LVIDENT, id);
-	match(T_ASSIGN, "=");
-	left = binexpr(0);
-	tree = mkastnode(A_ASSIGN, left, NULL, right, 0);
-
-	return tree;
-}
-
-static struct ASTnode *for_statement(void);
-static struct ASTnode *single_statement(void)
-{
-	switch (Token.token) {
-	case T_PRINT:
-		return (print_statement());
-	case T_INT:
-		var_declaration();
-		return (NULL); // No AST generated here
-	case T_IDENT:
-		return (assignment_statement());
-	case T_IF:
-		return (if_statement());
-	case T_WHILE:
-		return (while_statement());
-	case T_FOR:
-		return (for_statement());
-	default:
-		fatald("Syntax error, token", Token.token);
-	}
-	return NULL;
-}
-
+static struct ASTnode *single_statement(void);
 static struct ASTnode *for_statement(void)
 {
 	struct ASTnode *condAST, *bodyAST;
@@ -123,10 +112,33 @@ static struct ASTnode *for_statement(void)
 
 	bodyAST = compound_statement();
 
-	tree = mkastnode(A_GLUE, bodyAST, NULL, postopAST, 0);
-	tree = mkastnode(A_WHILE, condAST, NULL, tree, 0);
+	tree = mkastnode(A_GLUE, P_NONE, bodyAST, NULL, postopAST, 0);
+	tree = mkastnode(A_WHILE, P_NONE, condAST, NULL, tree, 0);
 
-	return mkastnode(A_GLUE, preopAST, NULL, tree, 0);
+	return mkastnode(A_GLUE, P_NONE, preopAST, NULL, tree, 0);
+}
+
+static struct ASTnode *single_statement(void)
+{
+	switch (Token.token) {
+	case T_PRINT:
+		return (print_statement());
+	case T_CHAR:
+	case T_INT:
+		var_declaration();
+		return (NULL); // No AST generated here
+	case T_IDENT:
+		return (assignment_statement());
+	case T_IF:
+		return (if_statement());
+	case T_WHILE:
+		return (while_statement());
+	case T_FOR:
+		return (for_statement());
+	default:
+		fatald("Syntax error, token", Token.token);
+	}
+	return NULL;
 }
 
 struct ASTnode *compound_statement(void)
@@ -145,7 +157,7 @@ struct ASTnode *compound_statement(void)
 			if (!left)
 				left = tree;
 			else
-				left = mkastnode(A_GLUE, left, NULL, tree, 0);
+				left = mkastnode(A_GLUE, P_NONE, left, NULL, tree, 0);
 		}
 
 		if (Token.token == T_RBRACE) {

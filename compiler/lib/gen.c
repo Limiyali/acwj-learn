@@ -93,18 +93,6 @@ int genAST(struct ASTnode *n, int reg, int parentASTop)
 		return (cgmul(leftreg, rightreg));
 	case A_DIVIDE:
 		return (cgdiv(leftreg, rightreg));
-	case A_INTLIT:
-		return (cgloadint(n->v.intvalue));
-	case A_IDENT:
-		return cgloadglob(Gsym[n->v.id].name);
-	case A_LVIDENT:
-		return cgstorglob(reg, Gsym[n->v.id].name);
-	case A_ASSIGN:
-		return rightreg;
-	case A_PRINT:
-		genprintint(leftreg);
-		genfreeregs();
-		return NOREG;
 	case A_EQ:
 	case A_NE:
 	case A_LT:
@@ -115,6 +103,20 @@ int genAST(struct ASTnode *n, int reg, int parentASTop)
 			return (cgcompare_and_jump(n->op, leftreg, rightreg, reg));
 		else
 			return (cgcompare_and_set(n->op, leftreg, rightreg));
+	case A_INTLIT:
+		return (cgloadint(n->v.intvalue, n->type));
+	case A_IDENT:
+		return cgloadglob(n->v.id);
+	case A_LVIDENT:
+		return cgstorglob(reg, n->v.id);
+	case A_ASSIGN:
+		return rightreg;
+	case A_PRINT:
+		genprintint(leftreg);
+		genfreeregs();
+		return NOREG;
+	case A_WIDEN:
+		return cgwiden(leftreg, n->left->type, n->type);
 
 	default:
 		fprintf(stderr, "Unknown AST operator %d\n", n->op);
@@ -126,20 +128,18 @@ void genpreamble()
 {
 	cgpreamble();
 }
-void genpostamble()
-{
-	cgpostamble();
-}
+
 void genfreeregs()
 {
 	freeall_registers();
 }
+
 void genprintint(int reg)
 {
 	cgprintint(reg);
 }
 
-void genglobsym(char *s)
+void genglobsym(int id)
 {
-	cgglobsym(s);
+	cgglobsym(id);
 }
