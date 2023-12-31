@@ -2,10 +2,13 @@
 cmake_minimum_required (VERSION 3.16)
 
 # project name
-project(SimpleTest
-        VERSION 1.0)
+project(ACC
+VERSION 1.0)
 
 
 add_definitions("-Wall -Werror -g")
 add_subdirectory (lib)
-add_subdirectory (test)
+link_libraries(lib)
+include_directories (PUBLIC lib/inc)
+
+add_executable(acc acc.c)
