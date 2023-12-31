@@ -3,7 +3,7 @@
 #include "expr.h"
 #include "interp.h"
 #include "gen.h"
-#include "stmt.h"
+#include "decl.h"
 #include <stdio.h>
 #include <errno.h>
 #include <string.h>
@@ -45,9 +45,13 @@ int main(int argc, char *argv[])
 
 	scan(&Token);
 	genpreamble();
-	struct ASTnode *tree = compound_statement();
-	genAST(tree, NOREG, 0);
-	genpostamble();
+	while (1) {
+		struct ASTnode *tree = function_declaration();
+		genAST(tree, NOREG, 0);
+		if (Token.token == T_EOF)
+			break;
+	}
+
 	fclose(Outfile);
 	return 0;
 }
