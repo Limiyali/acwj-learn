@@ -19,6 +19,11 @@ static struct ASTnode *primary(void)
 			n = mkastleaf(A_INTLIT, P_INT, Token.intvalue);
 		break;
 	case T_IDENT:
+		scan(&Token);
+		if (Token.token == T_LPAREN)
+			return funccall();
+		reject_token(&Token);
+
 		id = findglob(Text);
 		if (id == -1)
 			fatals("Unknown variable", Text);
@@ -88,4 +93,21 @@ struct ASTnode *binexpr(int ptp)
 			return left;
 	}
 	return left;
+}
+
+struct ASTnode *funccall(void)
+{
+	struct ASTnode *tree;
+	int id;
+
+	if ((id = findglob(Text)) == -1) {
+		fatals("Undeclared function", Text);
+	}
+
+	lparen();
+	tree = binexpr(0);
+
+	tree = mkastunary(A_FUNCCALL, Gsym[id].type, tree, id);
+	rparen();
+	return tree;
 }

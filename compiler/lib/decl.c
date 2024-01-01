@@ -14,10 +14,12 @@ int parse_type(int t)
 		return (P_CHAR);
 	if (t == T_INT)
 		return (P_INT);
+	if (t == T_LONG)
+		return (P_LONG);
 	if (t == T_VOID)
 		return (P_VOID);
 	fatald("Illegal type, token", t);
-	return P_NONE;
+	return (P_VOID);
 }
 
 void var_declaration(void)
@@ -27,21 +29,33 @@ void var_declaration(void)
 	type = parse_type(Token.token);
 	scan(&Token);
 	ident();
-	id = addglob(Text, type, S_VARIABLE);
+	id = addglob(Text, type, S_VARIABLE, 0);
 	genglobsym(id);
 	semi();
 }
 
 struct ASTnode *function_declaration(void)
 {
-	struct ASTnode *tree;
-	int nameslot;
+	struct ASTnode *tree, *finalstmt;
+	int nameslot, type, endlabel;
 
-	match(T_VOID, "void");
+	type = parse_type(Token.token);
+	scan(&Token);
 	ident();
-	nameslot = addglob(Text, P_VOID, S_FUNCTION);
+
+	endlabel = genlabel();
+	nameslot = addglob(Text, type, S_FUNCTION, endlabel);
+	Functionid = nameslot;
+
 	lparen();
 	rparen();
 	tree = compound_statement();
-	return mkastunary(A_FUNCTION, P_VOID, tree, nameslot);
+
+	if (type != P_VOID) {
+		finalstmt = (tree->op == A_GLUE) ? tree->right : tree;
+		if (finalstmt == NULL || finalstmt->op != A_RETURN)
+			fatal("No return for function with non-void type");
+	}
+
+	return mkastunary(A_FUNCTION, type, tree, nameslot);
 }

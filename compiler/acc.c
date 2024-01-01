@@ -4,6 +4,7 @@
 #include "interp.h"
 #include "gen.h"
 #include "decl.h"
+#include "sym.h"
 #include <stdio.h>
 #include <errno.h>
 #include <string.h>
@@ -42,7 +43,7 @@ int main(int argc, char *argv[])
 		fprintf(stderr, "Unable to create out.s: %s\n", strerror(errno));
 		exit(1);
 	}
-
+	addglob("printint", P_CHAR, S_FUNCTION, 0);
 	scan(&Token);
 	genpreamble();
 	while (1) {

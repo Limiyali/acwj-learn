@@ -9,6 +9,7 @@ struct symtable {
 	char *name; // Name of a symbol
 	int type;
 	int stype;
+	int endlabel;
 };
 
 enum {
@@ -39,7 +40,9 @@ enum {
 	T_WHILE,
 	T_FOR,
 	T_VOID,
-	T_CHAR
+	T_CHAR,
+	T_LONG,
+	T_RETURN
 };
 
 enum {
@@ -63,7 +66,9 @@ enum {
 	A_WHILE,
 	A_FORE,
 	A_FUNCTION,
-	A_WIDEN
+	A_WIDEN,
+	A_FUNCCALL,
+	A_RETURN
 };
 
 struct ASTnode {
@@ -78,6 +83,6 @@ struct ASTnode {
 	} v;
 };
 
-enum { P_NONE, P_VOID, P_CHAR, P_INT };
+enum { P_NONE, P_VOID, P_CHAR, P_INT, P_LONG };
 
 enum { S_VARIABLE, S_FUNCTION };

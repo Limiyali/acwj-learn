@@ -5,6 +5,7 @@
 #include <string.h>
 #include <stdio.h>
 #include <ctype.h>
+static struct token *Rejtoken = NULL;
 
 static int chrpos(char *s, int c)
 {
@@ -105,13 +106,34 @@ static int keyword(char *s)
 		if (!strcmp(s, "char"))
 			return (T_CHAR);
 		break;
+	case 'l':
+		if (!strcmp(s, "long"))
+			return (T_LONG);
+		break;
+	case 'r':
+		if (!strcmp(s, "return"))
+			return (T_RETURN);
+		break;
 	}
 	return (0);
+}
+
+void reject_token(struct token *t)
+{
+	if (Rejtoken != NULL)
+		fatal("Can't reject token twice");
+	Rejtoken = t;
 }
 
 int scan(struct token *t)
 {
 	int c, tokentype;
+
+	if (Rejtoken != NULL) {
+		t = Rejtoken;
+		Rejtoken = NULL;
+		return 1;
+	}
 
 	// Skip whitespace
 	c = skip();

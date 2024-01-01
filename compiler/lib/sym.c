@@ -26,14 +26,20 @@ static int newglob(void)
 	return (p);
 }
 
-int addglob(char *name, int type, int stype)
+int addglob(char *name, int type, int stype, int endlabel)
 {
 	int y;
+
+	// If this is already in the symbol table, return the existing slot
 	if ((y = findglob(name)) != -1)
-		return y;
+		return (y);
+
+	// Otherwise get a new slot, fill it in and
+	// return the slot number
 	y = newglob();
 	Gsym[y].name = strdup(name);
 	Gsym[y].type = type;
 	Gsym[y].stype = stype;
-	return y;
+	Gsym[y].endlabel = endlabel;
+	return (y);
 }
