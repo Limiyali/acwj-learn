@@ -22,3 +22,5 @@ void cgjump(int l);
 int cgcompare_and_jump(int ASTop, int r1, int r2, int label);
 int cgwiden(int r, int oldtype, int newtype);
 void cgreturn(int reg, int id);
+int cgaddress(int id);
+int cgderef(int r, int type);

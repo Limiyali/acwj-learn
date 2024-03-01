@@ -61,13 +61,14 @@ int op_precedence(int tokentype)
 	return prec;
 }
 
+struct ASTnode *prefix(void);
 struct ASTnode *binexpr(int ptp)
 {
 	struct ASTnode *left, *right;
 	int lefttype, righttype;
 	int tokentype;
 
-	left = primary();
+	left = prefix();
 
 	tokentype = Token.token;
 	if (tokentype == T_SEMI || tokentype == T_RPAREN)
@@ -110,4 +111,31 @@ struct ASTnode *funccall(void)
 	tree = mkastunary(A_FUNCCALL, Gsym[id].type, tree, id);
 	rparen();
 	return tree;
+}
+
+struct ASTnode *prefix(void)
+{
+	struct ASTnode *tree;
+	switch (Token.token) {
+	case T_AMPER:
+		scan(&Token);
+		tree = prefix();
+		if (tree->op != A_IDENT)
+			fatal("& operator must be followed by an identifier");
+		tree->op = A_ADDR;
+		tree->type = pointer_to(tree->type);
+		break;
+	case T_STAR:
+		scan(&Token);
+		tree = prefix();
+		if (tree->op != A_IDENT && tree->op != A_DEREF)
+			fatal("* operator must be followed by an identifier or *");
+		tree = mkastunary(A_DEREF, value_at(tree->type), tree, 0);
+		break;
+
+	default:
+		tree = primary();
+	}
+
+	return (tree);
 }

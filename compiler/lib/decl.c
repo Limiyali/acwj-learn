@@ -4,30 +4,46 @@
 #include "tree.h"
 #include "data.h"
 #include "sym.h"
+#include "types.h"
 #include "gen.h"
 #include "stmt.h"
 #include "scan.h"
 
-int parse_type(int t)
+int parse_type(void)
 {
-	if (t == T_CHAR)
-		return (P_CHAR);
-	if (t == T_INT)
-		return (P_INT);
-	if (t == T_LONG)
-		return (P_LONG);
-	if (t == T_VOID)
-		return (P_VOID);
-	fatald("Illegal type, token", t);
-	return (P_VOID);
+	int type;
+	switch (Token.token) {
+	case T_VOID:
+		type = P_VOID;
+		break;
+	case T_CHAR:
+		type = P_CHAR;
+		break;
+	case T_INT:
+		type = P_INT;
+		break;
+	case T_LONG:
+		type = P_LONG;
+		break;
+	default:
+		fatald("Illegal type, token", Token.token);
+	}
+
+	while (1) {
+		scan(&Token);
+		if (Token.token != T_STAR)
+			break;
+		type = pointer_to(type);
+	}
+
+	return (type);
 }
 
 void var_declaration(void)
 {
 	int id, type;
 
-	type = parse_type(Token.token);
-	scan(&Token);
+	type = parse_type();
 	ident();
 	id = addglob(Text, type, S_VARIABLE, 0);
 	genglobsym(id);
@@ -39,8 +55,7 @@ struct ASTnode *function_declaration(void)
 	struct ASTnode *tree, *finalstmt;
 	int nameslot, type, endlabel;
 
-	type = parse_type(Token.token);
-	scan(&Token);
+	type = parse_type();
 	ident();
 
 	endlabel = genlabel();

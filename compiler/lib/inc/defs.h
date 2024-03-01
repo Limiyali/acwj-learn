@@ -42,7 +42,9 @@ enum {
 	T_VOID,
 	T_CHAR,
 	T_LONG,
-	T_RETURN
+	T_RETURN,
+	T_LOGAND,
+	T_AMPER
 };
 
 enum {
@@ -68,7 +70,9 @@ enum {
 	A_FUNCTION,
 	A_WIDEN,
 	A_FUNCCALL,
-	A_RETURN
+	A_RETURN,
+	A_ADDR,
+	A_DEREF
 };
 
 struct ASTnode {
@@ -83,6 +87,16 @@ struct ASTnode {
 	} v;
 };
 
-enum { P_NONE, P_VOID, P_CHAR, P_INT, P_LONG };
+enum {
+	P_NONE,
+	P_VOID,
+	P_CHAR,
+	P_INT,
+	P_LONG,
+	P_VOIDPTR,
+	P_CHARPTR,
+	P_INTPTR,
+	P_LONGPTR
+};
 
 enum { S_VARIABLE, S_FUNCTION };
